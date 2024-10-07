@@ -123,20 +123,3 @@ resource "azurerm_public_ip" "public_ip" {
   allocation_method   = "Dynamic"
   sku                 = "Standard"
 }
-
-# Include VM configurations from separate TF files
-module "windows_10_vm" {
-  source = "./vms/windows_10.tf"
-}
-
-module "windows_11_vm" {
-  source = "./vms/windows_11.tf"
-}
-
-module "windows_server_vm" {
-  source = "./vms/windows_server.tf"
-}
-
-module "ubuntu_22_vm" {
-  source = "./vms/ubuntu_22.tf"
-}
