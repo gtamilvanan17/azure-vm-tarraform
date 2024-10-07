@@ -1,17 +1,17 @@
 # Virtual Network
-resource "azurerm_virtual_network" "vnet" {
+resource "azurerm_virtual_network" "sne_vnet" {
   name                = var.vnet_name
   address_space       = [var.vnet_address_space]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  tags = {
+  tags = {resource "azurerm_subnet" "public_subnet"
     environment = "Dev"
   }
 }
 
 # Public Subnet
-resource "azurerm_subnet" "public_subnet" {
+resource "azurerm_subnet" "sne_public_subnet" {
   name                 = var.public_subnet_name
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.vnet.name
@@ -19,7 +19,7 @@ resource "azurerm_subnet" "public_subnet" {
 }
 
 # Private Subnet
-resource "azurerm_subnet" "private_subnet" {
+resource "azurerm_subnet" "sne_private_subnet" {
   name                 = var.private_subnet_name
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.vnet.name
@@ -27,7 +27,7 @@ resource "azurerm_subnet" "private_subnet" {
 }
 
 # NSG for Public Subnet
-resource "azurerm_network_security_group" "nsg_public" {
+resource "azurerm_network_security_group" "sne_nsg_public" {
   name                = var.public_nsg_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -70,7 +70,7 @@ resource "azurerm_network_security_group" "nsg_public" {
 }
 
 # NSG for Private Subnet
-resource "azurerm_network_security_group" "nsg_private" {
+resource "azurerm_network_security_group" "sne_nsg_private" {
   name                = var.private_nsg_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -101,7 +101,7 @@ resource "azurerm_network_security_group" "nsg_private" {
 }
 
 # Public IP Address for VMs in Public Subnet
-resource "azurerm_public_ip" "public_ip" {
+resource "azurerm_public_ip" "sne_public_ip" {
   count               = var.deploy_windows_10 ? 1 : 0 + var.deploy_windows_11 ? 1 : 0
   name                = "public-ip-${count.index}"
   location            = azurerm_resource_group.main.location

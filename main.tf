@@ -125,18 +125,18 @@ resource "azurerm_public_ip" "public_ip" {
 }
 
 # Include VM configurations from separate TF files
-module "windows_10" {
+module "windows_10_vm" {
   source = "./vms/windows_10.tf"
 }
 
-module "windows_11" {
+module "windows_11_vm" {
   source = "./vms/windows_11.tf"
 }
 
-module "windows_server" {
+module "windows_server_vm" {
   source = "./vms/windows_server.tf"
 }
 
-module "ubuntu_22" {
+module "ubuntu_22_vm" {
   source = "./vms/ubuntu_22.tf"
 }
