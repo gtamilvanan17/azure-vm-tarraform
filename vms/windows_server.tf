@@ -1,12 +1,12 @@
-resource "azurerm_linux_virtual_machine" "ubuntu_22_vm" {
-  count               = var.deploy_ubuntu_22 ? 1 : 0
-  name                = "Ubuntu22-${count.index}"
+resource "azurerm_windows_virtual_machine" "windows_server_vm" {
+  count               = var.deploy_windows_server ? 1 : 0
+  name                = "WindowsServer-${count.index}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  size                = var.vm_size_ubuntu
+  size                = var.vm_size_windows
   admin_username      = var.admin_username
   admin_password      = var.admin_password
-  network_interface_ids = [azurerm_network_interface.ubuntu_22_nic[count.index].id]
+  network_interface_ids = [azurerm_network_interface.windows_server_nic[count.index].id]
   os_disk {
     caching              = "ReadWrite"
     managed_disk_type    = "Standard"
@@ -14,9 +14,9 @@ resource "azurerm_linux_virtual_machine" "ubuntu_22_vm" {
   }
 }
 
-resource "azurerm_network_interface" "ubuntu_22_nic" {
-  count               = var.deploy_ubuntu_22 ? 1 : 0
-  name                = "nic-ubuntu-22-${count.index}"
+resource "azurerm_network_interface" "windows_server_nic" {
+  count               = var.deploy_windows_server ? 1 : 0
+  name                = "nic-windows-server-${count.index}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 

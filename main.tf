@@ -1,22 +1,30 @@
 provider "azurerm" {
   features {}
+
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
 }
 
-# Create Resource Group
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
   location = var.location
 }
 
-# Create Virtual Network
+# VNet Configuration
 resource "azurerm_virtual_network" "vnet" {
   name                = var.vnet_name
   address_space       = [var.vnet_address_space]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+
+  tags = {
+    environment = "Dev"
+  }
 }
 
-# Create Public Subnet
+# Public Subnet
 resource "azurerm_subnet" "public_subnet" {
   name                 = var.public_subnet_name
   resource_group_name  = azurerm_resource_group.main.name
@@ -24,7 +32,7 @@ resource "azurerm_subnet" "public_subnet" {
   address_prefixes     = [var.public_subnet_address_prefix]
 }
 
-# Create Private Subnet
+# Private Subnet
 resource "azurerm_subnet" "private_subnet" {
   name                 = var.private_subnet_name
   resource_group_name  = azurerm_resource_group.main.name
@@ -32,13 +40,12 @@ resource "azurerm_subnet" "private_subnet" {
   address_prefixes     = [var.private_subnet_address_prefix]
 }
 
-# Network Security Group for Public Subnet
-resource "azurerm_network_security_group" "nacl_public" {
-  name                = var.public_nacl_name
+# NSG for Public Subnet
+resource "azurerm_network_security_group" "nsg_public" {
+  name                = var.public_nsg_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # Inbound Security Rules
   security_rule {
     name                       = "Allow_HTTP"
     priority                   = 100
@@ -48,7 +55,7 @@ resource "azurerm_network_security_group" "nacl_public" {
     source_port_range          = "*"
     destination_port_range     = "80"
     source_address_prefix      = "*"
-    destination_address_prefix  = "*"
+    destination_address_prefix = "*"
   }
 
   security_rule {
@@ -60,7 +67,7 @@ resource "azurerm_network_security_group" "nacl_public" {
     source_port_range          = "*"
     destination_port_range     = "443"
     source_address_prefix      = "*"
-    destination_address_prefix  = "*"
+    destination_address_prefix = "*"
   }
 
   security_rule {
@@ -72,18 +79,16 @@ resource "azurerm_network_security_group" "nacl_public" {
     source_port_range          = "*"
     destination_port_range     = "3389"
     source_address_prefix      = "*"
-    destination_address_prefix  = "*"
+    destination_address_prefix = "*"
   }
-
 }
 
-# Network Security Group for Private Subnet
-resource "azurerm_network_security_group" "nacl_private" {
-  name                = var.private_nacl_name
+# NSG for Private Subnet
+resource "azurerm_network_security_group" "nsg_private" {
+  name                = var.private_nsg_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # Inbound Security Rules
   security_rule {
     name                       = "Allow_SSH"
     priority                   = 100
@@ -92,12 +97,24 @@ resource "azurerm_network_security_group" "nacl_private" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "Allow_RDP_Private"
+    priority                   = 200
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
     source_address_prefix      = azurerm_network_interface.windows_server_nic[0].private_ip_address
-    destination_address_prefix  = "*"
+    destination_address_prefix = "*"
   }
 }
 
-# Create Public IPs for VMs
+# Public IP Address for VMs in Public Subnet
 resource "azurerm_public_ip" "public_ip" {
   count               = var.deploy_windows_10 ? 1 : 0 + var.deploy_windows_11 ? 1 : 0
   name                = "public-ip-${count.index}"
@@ -107,19 +124,19 @@ resource "azurerm_public_ip" "public_ip" {
   sku                 = "Standard"
 }
 
-# Call VM Definitions
+# Include VM configurations from separate TF files
 module "windows_10" {
-  source = "./vms/windows_10.tf"
+  source = "./windows_10.tf"
 }
 
 module "windows_11" {
-  source = "./vms/windows_11.tf"
+  source = "./windows_11.tf"
 }
 
 module "windows_server" {
-  source = "./vms/windows_server.tf"
+  source = "./windows_server.tf"
 }
 
 module "ubuntu_22" {
-  source = "./vms/ubuntu_22.tf"
+  source = "./ubuntu_22.tf"
 }

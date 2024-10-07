@@ -2,72 +2,72 @@
 variable "resource_group_name" {
   description = "The name of the resource group"
   type        = string
-  default     = "sne-devops"
+  default     = "my-resource-group"
 }
 
 # Location
 variable "location" {
   description = "The Azure region to deploy the resources"
   type        = string
-  default     = "centralindia"
+  default     = "eastus"
 }
 
 # VNet Configurations
 variable "vnet_name" {
   description = "The name of the virtual network"
   type        = string
-  default     = "sne-devops-vnet"
+  default     = "my-vnet"
 }
 
 variable "vnet_address_space" {
   description = "Address space for the VNet"
   type        = string
-  default     = "192.168.0.0/16"
+  default     = "10.0.0.0/16"
 }
 
 # Subnet Configurations
 variable "public_subnet_name" {
   description = "The name of the public subnet"
   type        = string
-  default     = "sne-devops-vnet-subnet-public"
+  default     = "my-public-subnet"
 }
 
 variable "public_subnet_address_prefix" {
   description = "Address prefix for the public subnet"
   type        = string
-  default     = "192.168.50.0/24"
+  default     = "10.0.1.0/24"
 }
 
 variable "private_subnet_name" {
   description = "The name of the private subnet"
   type        = string
-  default     = "sne-devops-vnet-subnet-private"
+  default     = "my-private-subnet"
 }
 
 variable "private_subnet_address_prefix" {
   description = "Address prefix for the private subnet"
   type        = string
-  default     = "192.168.100.0/24"
+  default     = "10.0.2.0/24"
 }
 
 # NSG Configurations
 variable "public_nsg_name" {
   description = "Name of the Network Security Group for the public subnet"
   type        = string
-  default     = "sne-devops-nsg-public"
+  default     = "nsg-public"
 }
 
 variable "private_nsg_name" {
   description = "Name of the Network Security Group for the private subnet"
   type        = string
-  default     = "sne-devops-nsg-private"
+  default     = "nsg-private"
 }
 
 # VM Configurations
 variable "admin_username" {
   description = "Admin username for the VMs"
   type        = string
-  default     = "tamilvanan"
+  default     = "adminuser"
 }
 
 variable "admin_password" {
@@ -98,7 +98,7 @@ variable "deploy_windows_10" {
 variable "deploy_windows_11" {
   description = "Flag to deploy Windows 11 VM"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "deploy_windows_server" {
@@ -110,7 +110,7 @@ variable "deploy_windows_server" {
 variable "deploy_ubuntu_22" {
   description = "Flag to deploy Ubuntu 22.04 VM"
   type        = bool
-  default     = true
+  default     = false
 }
 
 # Subnet Assignment for VMs (Public/Private)
