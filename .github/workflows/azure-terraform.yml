@@ -36,6 +36,9 @@ jobs:
         -var="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
         -var="admin_password=${{ secrets.ARM_ADMIN_PASSWORD }}" \
 
+        ls -lla
+        pwd
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
+
+    # - name: Terraform Apply
+#   run: terraform apply -auto-approve tfplan
