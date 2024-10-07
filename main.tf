@@ -126,17 +126,17 @@ resource "azurerm_public_ip" "public_ip" {
 
 # Include VM configurations from separate TF files
 module "windows_10" {
-  source = "vms/windows_10.tf"
+  source = "./vms/windows_10.tf"
 }
 
 module "windows_11" {
-  source = "vms/windows_11.tf"
+  source = "./vms/windows_11.tf"
 }
 
 module "windows_server" {
-  source = "vms/windows_server.tf"
+  source = "./vms/windows_server.tf"
 }
 
 module "ubuntu_22" {
-  source = "vms/ubuntu_22.tf"
+  source = "./vms/ubuntu_22.tf"
 }
