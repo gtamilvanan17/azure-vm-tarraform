@@ -1,64 +1,44 @@
-# Virtual Network
-resource "azurerm_virtual_network" "sne_vnet" {
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
+resource "azurerm_virtual_network" "vnet" {
   name                = var.vnet_name
-  address_space       = [var.vnet_address_space]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  tags = {resource "azurerm_subnet" "public_subnet"
-    environment = "Dev"
-  }
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  address_space       = ["10.0.0.0/16"]
 }
 
-# Public Subnet
-resource "azurerm_subnet" "sne_public_subnet" {
+resource "azurerm_subnet" "public_subnet" {
   name                 = var.public_subnet_name
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.public_subnet_address_prefix]
+  address_prefixes     = ["10.0.1.0/24"]
 }
 
-# Private Subnet
-resource "azurerm_subnet" "sne_private_subnet" {
+resource "azurerm_subnet" "private_subnet" {
   name                 = var.private_subnet_name
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = [var.private_subnet_address_prefix]
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
-# NSG for Public Subnet
-resource "azurerm_network_security_group" "sne_nsg_public" {
-  name                = var.public_nsg_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+resource "azurerm_public_ip" "public_ip" {
+  name                = "windows-vm-public-ip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  allocation_method   = "Dynamic"
+}
+
+resource "azurerm_network_security_group" "nsg" {
+  name                = var.nsg_name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 
   security_rule {
-    name                       = "Allow_HTTP"
+    name                       = "allow_rdp"
     priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow_HTTPS"
-    priority                   = 200
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "443"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Allow_RDP"
-    priority                   = 300
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -67,17 +47,10 @@ resource "azurerm_network_security_group" "sne_nsg_public" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-}
-
-# NSG for Private Subnet
-resource "azurerm_network_security_group" "sne_nsg_private" {
-  name                = var.private_nsg_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name                       = "Allow_SSH"
-    priority                   = 100
+    name                       = "allow_ssh"
+    priority                   = 110
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -86,26 +59,20 @@ resource "azurerm_network_security_group" "sne_nsg_private" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-
-  security_rule {
-    name                       = "Allow_RDP_Private"
-    priority                   = 200
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3389"
-    source_address_prefix      = azurerm_network_interface.windows_server_nic[0].private_ip_address
-    destination_address_prefix = "*"
-  }
 }
 
-# Public IP Address for VMs in Public Subnet
-resource "azurerm_public_ip" "sne_public_ip" {
-  count               = var.deploy_windows_10 ? 1 : 0 + var.deploy_windows_11 ? 1 : 0
-  name                = "public-ip-${count.index}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
-  sku                 = "Standard"
+resource "azurerm_network_interface" "windows_nic" {
+  name                = "windows11-nic"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = azurerm_subnet.public_subnet.id
+  public_ip_address_id = azurerm_public_ip.public_ip.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+resource "azurerm_network_interface" "ubuntu_nic" {
+  name                = "ubuntu-nic"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_id           = azurerm_subnet.private_subnet.id
 }
